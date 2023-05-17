@@ -1,0 +1,93 @@
+#!/usr/bin/env bash
+COMMAND=$1
+DEFAULT_INSTALL_PATH=$GOENV_DEFAULT_INSTALL_PATH
+
+
+show_help () {
+
+    echo "goenv usage examples";
+    echo "---------------------------------------------"
+    echo ""
+    echo "- Installed versions listing: List all go versions into /usr/local"
+    echo "      goenv versions"
+    echo ""
+    echo "-------------------------------"
+    echo ""
+    echo "- Change installed versions listing: Changes go versions with installed one"
+    echo "      goenv change <installed-go-version>"
+
+}
+
+
+if [ -z "$DEFAULT_INSTALL_PATH" ]
+then
+    echo "GOENV_DEFAULT_INSTALL_PATH enviroment variable should be defined";
+    exit 1
+fi
+
+
+if [ -z "$COMMAND" ]
+then
+    echo "ERROR - Should be passed a command to goevn!";
+    show_help
+    exit 1
+fi
+
+
+if [ "$COMMAND" == "help" ] || [ "$COMMAND" == "-h" ]
+then
+    show_help
+    exit 1
+fi
+
+
+
+INSTALLED_VERSIONS=$(ls $DEFAULT_INSTALL_PATH | grep go)
+
+
+if [ "$COMMAND" == "versions" ]
+then
+    echo "INFO : Installed GO versions";
+    for f in $INSTALLED_VERSIONS; do
+        if [ "go" == "$f" ]
+        then
+            GO_LINK_SOURCE=$(readlink -f $DEFAULT_INSTALL_PATH/go)
+            echo "VERSION : $f --> (linked to $GO_LINK_SOURCE)"
+        else
+            echo "VERSION : $f"
+        fi
+    done
+    exit 1
+elif [ "$COMMAND" == "change" ] 
+then
+    VERSION=$2
+
+    if [ -z "$VERSION" ] 
+    then
+        echo "ERROR : Target version should be set. Example, goenv change <installed-go-version>. Check installed versions with goenv versions.";
+        exit 1;
+    fi;
+
+    echo "INFO : Go version will be changed to $VERSION"
+    for f in $INSTALLED_VERSIONS; do
+        if [ "$f" == "go$VERSION" ]
+        then
+            echo "INFO : Go version changed to $f"
+
+            if [ -d "$DEFAULT_INSTALL_PATH/go" ]
+            then
+                echo "INFO : Existing link will be deleted $DEFAULT_INSTALL_PATH/go"
+                rm -rf $DEFAULT_INSTALL_PATH/go
+            fi
+
+            ln -s $DEFAULT_INSTALL_PATH/$f $DEFAULT_INSTALL_PATH/go
+            echo "INFO : Go version changed successfully"
+            echo "INFO : $(go version)"
+            exit 1
+        fi
+    done
+
+    echo "WARNING : Can not find specified version into $DEFAULT_INSTALL_PATH"
+    exit 1
+
+fi

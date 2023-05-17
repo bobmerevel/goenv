@@ -24,6 +24,9 @@ Supported system shown below.
 
 Follow below steps to install.
 
+### Clone project to local
+
+### Go project directory
 
 
 ## Command References
